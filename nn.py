@@ -31,7 +31,7 @@ def one_hot(K, pos):
     return y0
 
 
-def backprop(Theta1, Theta2, X, y, lmb):
+def backprop(Theta1, Theta2, X, y):
     N = X.shape[0]
     K = Theta2.shape[0]
 
@@ -67,8 +67,8 @@ def backprop(Theta1, Theta2, X, y, lmb):
     Theta1[:, 0] = np.zeros(Theta1.shape[0])
     Theta2[:, 0] = np.zeros(Theta2.shape[0])
 
-    Theta1_grad = Delta1/N + lmb/N*Theta1
-    Theta2_grad = Delta2/N + lmb/N*Theta2
+    Theta1_grad = Delta1/N
+    Theta2_grad = Delta2/N
 
     return [J, Theta1_grad, Theta2_grad]
 
@@ -77,26 +77,26 @@ if __name__ == "__main__":
     Theta1 = init_weights(input_layer_size, hidden_layer_size)
     Theta2 = init_weights(hidden_layer_size, num_labels)
 
-    iter = 0
+    step = 0
     tol = 1e-3
     J_old = 1/tol
     diff = 1
 
     while diff > tol:
-        J_train, Theta1_grad, Theta2_grad = backprop(Theta1, Theta2, X_train, y_train, 1.)
+        J_train, Theta1_grad, Theta2_grad = backprop(Theta1, Theta2, X_train, y_train)
 
         diff = abs(J_old-J_train)
         J_old = J_train
 
-        iter += 1
+        step += 1
 
-        if iter % 10 == 0:
+        if step % 10 == 0:
             pred_train = predict(Theta1, Theta2, X_train)
             pred_test = predict(Theta1, Theta2, X_test)
 
-            J_test, T1_grad, T2_grad = backprop(Theta1, Theta2, X_test, y_test, 1.)
+            J_test, T1_grad, T2_grad = backprop(Theta1, Theta2, X_test, y_test)
 
-            print(iter, J_train, J_test, accuracy(pred_train, y_train), accuracy(pred_test, y_test))
+            print(step, J_train, J_test, accuracy(pred_train, y_train), accuracy(pred_test, y_test))
 
         Theta1 -= .5*Theta1_grad
         Theta2 -= .5*Theta2_grad
