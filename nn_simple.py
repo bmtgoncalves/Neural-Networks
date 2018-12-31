@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
 import numpy as np
-from activation import sigmoid, sigmoidGradient
-from forward import *
+from activation_simple import sigmoid, sigmoidGradient
+from forward_simple import *
+
+np.random.seed(42)
 
 hidden_layer_size = 50
 num_labels = 10

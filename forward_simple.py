@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import numpy as np
-from activation import *
+from activation_simple import sigmoid
 
 
 def forward(Theta, X, active):
@@ -14,21 +14,16 @@ def forward(Theta, X, active):
     z = np.dot(X_, Theta.T)
 
     # Apply the activation function
-    a = active.f(z)
+    a = active(z)
 
     return a
 
 
-def predict(model, X):
-    h = X.copy()
+def predict(Theta1, Theta2, X):
+    h1 = forward(Theta1, X, sigmoid)
+    h2 = forward(Theta2, h1, sigmoid)
 
-    for i in range(0, len(model), 2):
-        theta = model[i]
-        activation = model[i+1]
-
-        h = forward(theta, h, activation)
-
-    return np.argmax(h, 1)
+    return np.argmax(h2, 1)
 
 
 def accuracy(y_, y):
@@ -42,13 +37,6 @@ if __name__ == "__main__":
     X = np.load('input/X_train.npy')
     y = np.load('input/y_train.npy')
 
-    model = []
-
-    model.append(Theta1)
-    model.append(Sigmoid)
-    model.append(Theta2)
-    model.append(Sigmoid)
-
-    y_ = predict(model, X)
+    y_ = predict(Theta1, Theta2, X)
 
     print(accuracy(y_, y))
