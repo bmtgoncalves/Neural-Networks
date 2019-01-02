@@ -66,9 +66,6 @@ def backprop(Theta1, Theta2, X, y):
 
     J /= N
 
-    Theta1[:, 0] = np.zeros(Theta1.shape[0])
-    Theta2[:, 0] = np.zeros(Theta2.shape[0])
-
     Theta1_grad = Delta1/N
     Theta2_grad = Delta2/N
 

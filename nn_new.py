@@ -36,30 +36,32 @@ def one_hot(K, pos):
 def backprop(model, X, y):
     M = X.shape[0]
 
-    Thetas = model[0::2]
-    activations = model[1::2]
+    Thetas=[0]
+    Thetas.extend(model[0::2])
+    activations = [0]
+    activations.extend(model[1::2])
 
     layers = len(Thetas)
 
     K = Thetas[-1].shape[0]
     J = 0
 
-    Deltas = []
+    Deltas = [0]
 
-    for i in range(layers):
+    for i in range(1, layers):
         Deltas.append(np.zeros(Thetas[i].shape))
 
-    deltas = [0, 0, 0, 0]
+    deltas = [0]*(layers+1)
 
     for i in range(M):
-        As = []
-        Zs = [0]
-        Hs = [X[i]]
+        As = [0]
+        Zs = [0, 0]
+        Hs = [0, X[i]]
 
         # Forward propagation, saving intermediate results
-        As.append(np.concatenate(([1], Hs[0])))  # Input layer
+        As.append(np.concatenate(([1], Hs[1])))  # Input layer
 
-        for l in range(1, layers+1):
+        for l in range(2, layers+1):
             Zs.append(np.dot(Thetas[l-1], As[l-1]))
             Hs.append(activations[l-1].f(Zs[l]))
             As.append(np.concatenate(([1], Hs[l])))
@@ -67,24 +69,23 @@ def backprop(model, X, y):
         y0 = one_hot(K, y[i])
 
         # Cross entropy
-        J -= np.dot(y0.T, np.log(Hs[2]))+np.dot((1-y0).T, np.log(1-Hs[2]))
+        J -= np.dot(y0.T, np.log(Hs[-1]))+np.dot((1-y0).T, np.log(1-Hs[-1]))
+
+        deltas[layers] = Hs[layers]-y0
 
         # Calculate the weight deltas
-        deltas[3] = Hs[layers]-y0
-        deltas[2] = np.dot(Thetas[1].T, deltas[3])[1:]*activations[1].df(Zs[1])
+        for l in range(layers-1, 1, -1):
+            deltas[l] = np.dot(Thetas[l].T, deltas[l+1])[1:]*activations[l].df(Zs[l])
 
-        Deltas[1] += np.outer(deltas[3], As[1])
-        Deltas[0] += np.outer(deltas[2], As[0])
+        Deltas[2] += np.outer(deltas[3], As[2])
+        Deltas[1] += np.outer(deltas[2], As[1])
 
     J /= M
 
-    Thetas[0][:, 0] = np.zeros(Thetas[0].shape[0])
-    Thetas[1][:, 0] = np.zeros(Thetas[1].shape[0])
-
     grads = []
 
-    grads.append(Deltas[0]/M)
     grads.append(Deltas[1]/M)
+    grads.append(Deltas[2]/M)
 
     return [J, grads]
 
@@ -107,7 +108,7 @@ if __name__ == "__main__":
     model.append(Sigmoid)
 
     while diff > tol:
-        J_train, Theta1_grad, Theta2_grad = backprop(model, X_train, y_train)
+        J_train, grads = backprop(model, X_train, y_train)
 
         diff = abs(J_old-J_train)
         J_old = J_train
